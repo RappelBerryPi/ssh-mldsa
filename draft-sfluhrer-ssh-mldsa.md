@@ -27,6 +27,9 @@ author:
   - fullname: "Scott Fluhrer"
     organization: Cisco Systems
     email: "sfluhrer@cisco.com"
+  - fullname: "Ryan Appel"
+    organization: Bank of America
+    email: "ryan.appel@bofa.com"
 
 normative:
 
@@ -59,18 +62,18 @@ informative:
 
 # Introduction
 
-   A Cryptographically Relevant Quantum Computer (CRQC) could break
-   traditional asymmetric cryptograph algorithms: e.g RSA, ECDSA; which
-   are widely deployed authentication options of SSH.
-   NIST has recently published the postquantum digital signature algorithm ML-DSA [FIPS204].
+   A Cryptographically Relevant Quantum Computer (CRQC) is a quantum computer with sufficient compute capability and stability that it is able to break traditional asymmetric cryptographic algorithms:
+   e.g RSA, ECDSA; which are currently the only authentication algorithms available for SSH.
+   NIST has recently published the post-quantum cryptography (PQC) algorithm known as ML-DSA [FIPS204] which is a digital signature algorithm.
 
    This document describes how to use this algorithm for authentication within SSH [RFC4251], as a replacement for the traditional signature algorithms (RSA, ECDSA).
 
 ## Background on ML-DSA
 
-   ML-DSA (as specified in FIPS 204) is a signature algorithm that is believed to be secure against attackers who have a Quantum Computer available to them.
-   There are three strengths defined for it (with the parameter sets being known as ML-DSA-44, ML-DSA-65 and ML-DSA-87).
-   In addition, for each defined parameter set, there are two versions, the 'pure' version (where ML-DSA directly signs the message) and a 'prehashed' version (where ML-DSA signs a hash that was computed outside of ML-DSA).
+   ML-DSA (as specified in FIPS 204) is a signature algorithm that is believed to be secure against attackers who have a CRQC available to them.
+   There are three parameter sets defined for it which belong to a respective NIST Security Category of 2, 3, and 5 (ML-DSA-44, ML-DSA-65, and ML-DSA-87).
+   In addition, for each defined parameter set, there are two versions, the 'pure' version (where ML-DSA computes the hash of the message internally and then signs that hash),
+   and a 'prehashed' version (where ML-DSA signs a hash that was computed outside of ML-DSA).
    For this protocol, we will always use the pure version.
 
    In addition, ML-DSA also has a 'context' input, which is a short string that is common to the sender and the recceiver.
@@ -80,7 +83,7 @@ informative:
    FIPS 204 also allows ML-DSA to be run in either determanistic or 'hedged' mode (where randomness is applied during the signature generation operation).
    We recommend that implementations use hedged mode, as it blocks certain side channel attacks.
    However, as both are interoperable, we do not place any requirement on which is used within this protocol.
-   
+
 # Conventions and Definitions
 
 {::boilerplate bcp14-tagged}
@@ -94,8 +97,8 @@ informative:
 
    This document describes three public key algorithms for use with SSH, as
    per [RFC4253], Section 6.6, corresponding to the three parameter sets of ML-DSA.
-   The names of the algorithm are "ssh-mldsa-44", "ssh-mldsa-65" and "ssh-mldsa-87", to match the level 2, 3 and 5 parameter sets [FIPS204].
-   These algorithm support only signing and not encryption.
+   The names of the algorithms are "ssh-mldsa-44", "ssh-mldsa-65" and "ssh-mldsa-87", to match the level 2, 3 and 5 parameter sets [FIPS204].
+   These algorithm support only signing; it does not support encryption.
 
    The below table lists the public key sizes and the signature size (in bytes) for the three parameter sets.
 
@@ -115,7 +118,7 @@ informative:
 
    Here, 'key' is the public key described in [FIPS204].
 
- # Signature Algorithm
+# Signature Algorithm
 
    Signatures are generated according to the procedure in Section 5.2
    [FIPS204], using the "pure" version of ML-DSA, with an empty context string.
@@ -133,7 +136,10 @@ informative:
 
 # Verification Algorithm
 
-   Signatures are verified according to the procedure in
+   Signatures are verified in two steps.
+   For the first step, the length of the signature must be checked against the parameter set,
+   if the signature length does not match the expected signature length for the parameter set, it must be rejected.
+   Thenm the signature is verified according to the procedure in
    [FIPS204], Section 5.3, using the "pure" version of ML-DSA, with an empty context string.
 
 # SSHFP DNS Resource Records
@@ -148,7 +154,7 @@ informative:
    The generation of SSHFP resource records keys for ML-DSA is
    described as follows.
 
-   The encoding of ML-DSA public keys is described in [FIPS204].
+   The encoding of ML-DSA public keys is described as above in section 4.
 
    The SSHFP Resource Record for an ML-DSA key fingerprint
    (with a SHA-256 fingerprint) would, for example, be:
