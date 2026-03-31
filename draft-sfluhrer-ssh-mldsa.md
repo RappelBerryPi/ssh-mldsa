@@ -83,7 +83,7 @@ informative:
    FIPS 204 also allows ML-DSA to be run in either determanistic or 'hedged' mode (where randomness is applied during the signature generation operation).
    We recommend that implementations use hedged mode, as it blocks certain side channel attacks.
    However, as both are interoperable, we do not place any requirement on which is used within this protocol.
-   
+
 # Conventions and Definitions
 
 {::boilerplate bcp14-tagged}
