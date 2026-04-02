@@ -68,86 +68,81 @@ informative:
    cryptography (PQC) algorithm known as ML-DSA [FIPS204] which is a digital signature algorithm.
 
    This document describes how to use this algorithm for authentication within SSH [RFC4251], as a replacement for the
-   traditional digital signature algorithms (e.g. RSA, ECDSA).
+   traditional signature algorithms (e.g. RSA, ECDSA).
 
 ## Background on ML-DSA
 
    ML-DSA (as specified in FIPS 204) is a signature algorithm that is believed to be secure against attackers who have a
-   CRQC available to them. There are three parameter sets defined for it which belong to a respective Security Category
-   of 2, 3, and 5 (ML-DSA-44, ML-DSA-65, and ML-DSA-87). In addition, for each defined parameter set, there are two
-   versions, the 'pure' version (where ML-DSA computes the hash internally of the message and then signs the internally
-   computed hash), and a 'prehashed' version (where ML-DSA signs a hash that was computed outside of ML-DSA). For this
-   protocol, we will always use the pure version.
+   CRQC available to them. There are three parameter sets defined for it which belong to a respective NIST Security
+   Category of 2, 3, and 5 (ML-DSA-44, ML-DSA-65, and ML-DSA-87). In addition, for each defined parameter set, there are
+   two versions, the 'pure' version (where ML-DSA computes the hash of the message internally and then signs that hash),
+   and a 'prehashed' version (where ML-DSA signs a hash that was computed outside of ML-DSA). For this protocol, we will
+   always use the pure version.
 
    In addition, ML-DSA also has a 'context' input, which is a short string that is common to the sender and the
-   recceiver. It is intended to allow for domain separation between separate uses of the same public key. This protocol
+   receiver. It is intended to allow for domain separation between separate uses of the same public key. This protocol
    always uses an empty (zero length) context.
 
-   FIPS 204 also allows ML-DSA to be run as a deterministic variant as opposed to the default 'hedged' variant (where
-   randomness is applied during the signature generation operation). We recommend that implementations use hedged mode,
-   as it blocks certain side channel attacks. However, as both are interoperable, we do not place any requirement on
-   which is used within this protocol.
+   FIPS 204 also allows ML-DSA to be run in either deterministic or 'hedged' mode (where randomness is applied during
+   the signature generation operation). We recommend that implementations use hedged mode, as it blocks certain side
+   channel attacks. However, as both are interoperable, we do not place any requirement on which is used within this
+   protocol.
 
 # Conventions and Definitions
 
 {::boilerplate bcp14-tagged}
 
-   The descriptions of key and signature formats use the notation introduced in [RFC4251], Section 3, and the string
-   data type from [RFC4251], Section 5.  Identifiers and terminology from ML-DSA [FIPS204] are used throughout the
-   document.
+   The descriptions of key and signature formats use the notation
+   introduced in [RFC4251], Section 3, and the string data type from
+   [RFC4251], Section 5.  Identifiers and terminology from ML-DSA
+   [FIPS204] are used throughout the document.
 
 # Public Key Algorithms
 
-   This document describes one public key algorithm for use with SSH, as per [RFC4253], Section 6.6, corresponding to
-   the three parameter sets of ML-DSA. The name of the algorithm is "ssh-mldsa", and internally uses the public key
-   format as a domain separator between the parameter sets [FIPS204].  This algorithm only supports signing, it does not
-   support encryption.
+   This document describes three public key algorithms for use with SSH, as per [RFC4253], Section 6.6, corresponding to
+   the three parameter sets of ML-DSA. The names of the algorithms are "ssh-mldsa-44", "ssh-mldsa-65" and
+   "ssh-mldsa-87", to match the level 2, 3 and 5 parameter sets [FIPS204]. These algorithms support only
+   signing/verification; they do not support encryption/decryption.
 
    The below table lists the public key sizes and the signature size (in bytes) for the three parameter sets.
 
-   | Parameter Set | Public Key Size | Signature Size |
-   | ------------- | --------------- | -------------- |
-   | ML-DSA-44     | 1312            | 2420           |
-   | ML-DSA-65     | 1952            | 3309           |
-   | ML-DSA-87     | 2592            | 4627           |
+   | Public Key Algorithm Name | Public Key Size | Signature Size |
+   | ------------------------- | --------------- | -------------- |
+   | ssh-mldsa-44              | 1312            | 2420           |
+   | ssh-mldsa-65              | 1952            | 3309           |
+   | ssh-mldsa-87              | 2592            | 4627           |
 
 # Public Key Format
 
    The key format for all three parameter sets have the following encoding:
 
-   string "ssh-mldsa"
+   string "ssh-mldsa-44" (or "ssh-mldsa-65" or "ssh-mldsa-87")
 
-   string key_blob
-
-   Here, 'key_blob' is encoded as follows:
-
-   string [parameter-set]
    string key
 
-   where [parameter-set] is one of the parameter set names as described in the table above, and the 'key' is the encoded
-   output of 'Algorithm 1' as described in [FIPS204].
+   Here, 'key' is the public key described in [FIPS204].
 
 # Signature Algorithm
 
-   Signatures are generated according using 'Algorithm 2' in Section 5.2 [FIPS204], using the "pure" version of ML-DSA,
+   Signatures are generated according to the procedure in Section 5.2 [FIPS204], using the "pure" version of ML-DSA,
    with an empty context string.
 
 # Signature Format
 
-   The "ssh-mldsa" key format has the following encoding:
+   The "ssh-mldsa" signature format has the following encoding:
 
-   string "ssh-mldsa"
-   string [parameter-set]
+   string "ssh-mldsa-44" (or "ssh-mldsa-65" or "ssh-mldsa-87")
+
    string signature
 
    Here, 'signature' is the signature produced in accordance with the previous section.
 
 # Verification Algorithm
 
-   Signatures are verified in two steps. For the first step, the length must be checked against the parameter-set, if
-   the signature length does not match the parameter-set then it must be rejected. Then a normal verification is run
-   according to 'Algorithm 3' in Section 5.3 [FIPS204], using the "pure" version of ML-DSA, with an empty context
-   string. 
+   Signatures are verified in two steps. For the first step, the length of the signature must be checked against the
+   parameter set, if the signature length does not match the expected signature length for the parameter set, it must be
+   rejected. Then the signature is verified according to the procedure in [FIPS204], Section 5.3, using the "pure"
+   version of ML-DSA, with an empty context string.
 
 # SSHFP DNS Resource Records
 
@@ -158,11 +153,13 @@ informative:
 
    The generation of SSHFP resource records keys for ML-DSA is described as follows.
 
-   The encoding of ML-DSA public keys are described as above in section 4.
+   The encoding of ML-DSA public keys is described as above in section 4.
 
    The SSHFP Resource Record for an ML-DSA key fingerprint (with a SHA-256 fingerprint) would, for example, be:
 
-   pqserver.example.com. IN SSHFP TBD 2 ( a87f1b687ac0e57d2a081a2f28267237 34d90ed316d2b818ca9580ea384d9240 )
+   pqserver.example.com. IN SSHFP TBD 2 (
+                    a87f1b687ac0e57d2a081a2f28267237
+                    34d90ed316d2b818ca9580ea384d9240 )
 
    Replace TBD with the value eventually allocated by IANA.
 
@@ -170,19 +167,23 @@ informative:
 
   This document augments the Public Key Algorithm Names in [RFC4250], Section 4.11.3.
 
-   IANA is requested to add the following entry to "Public Key Algorithm Names" in the "Secure Shell (SSH) Protocol
+   IANA is requested to add the following entries to "Public Key Algorithm Names" in the "Secure Shell (SSH) Protocol
    Parameters" registry [IANA-SSH]:
 
    | Public Key Algorithm Name | Reference |
    | ------------------------- | --------- |
-   | ssh-mldsa                 | THIS-RFC  |
+   | ssh-mldsa-44              | THIS-RFC  |
+   | ssh-mldsa-65              | THIS-RFC  |
+   | ssh-mldsa-87              | THIS-RFC  |
 
-   IANA is requested to add the following entry to "SSHFP RR Types for public key algorithms" in the "DNS SSHFP
+   IANA is requested to add the following entries to "SSHFP RR Types for public key algorithms" in the "DNS SSHFP
    Resource Record Parameters" registry [IANA-SSHFP]:
 
    | Value | Description | Reference |
    | ----- | ----------- | --------- |
-   | TBD1  | ML-DSA      | THIS RFC  |
+   | TBD1  | ML-DSA-44   | THIS RFC  |
+   | TBD2  | ML-DSA-65   | THIS RFC  |
+   | TBD3  | ML-DSA-87   | THIS RFC  |
 
 # Security Considerations
 
