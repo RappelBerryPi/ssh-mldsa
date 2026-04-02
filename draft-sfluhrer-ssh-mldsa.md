@@ -139,7 +139,7 @@ informative:
    Signatures are verified in two steps.
    For the first step, the length of the signature must be checked against the parameter set,
    if the signature length does not match the expected signature length for the parameter set, it must be rejected.
-   Thenm the signature is verified according to the procedure in
+   Then the signature is verified according to the procedure in
    [FIPS204], Section 5.3, using the "pure" version of ML-DSA, with an empty context string.
 
 # SSHFP DNS Resource Records
