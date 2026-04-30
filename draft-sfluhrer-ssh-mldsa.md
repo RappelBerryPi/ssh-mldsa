@@ -46,12 +46,16 @@ informative:
   RFC4251:
   RFC4253:
   RFC4255:
+  RFC9881:
   IANA-SSH:
     target: https://www.iana.org/assignments/ssh-parameters
     title: Secure Shell (SSH) Protocol Parameters
   IANA-SSHFP:
     target: https://www.iana.org/assignments/dns-sshfp-rr-parameters)
     title: DNS SSHFP Resource Record Parameters
+  I-D.ietf-lamps-pq-composite-sigs:
+     target: https://datatracker.ietf.org/doc/draft-ietf-lamps-pq-composite-sigs/19/
+     title: Composite Module-Lattice-Based Digital Signature Algorithm (ML-DSA) for use in X.509 Public Key Infrastructure
 
 --- abstract
 
@@ -260,7 +264,49 @@ informative:
    Cryptographic algorithms and parameters are usually broken or weakened over time.  Implementers and users need to
    continuously re-evaluate that cryptographic algorithms continue to provide the expected level of security.
 
+<!-- Start of Appendices -->
 --- back
+
+# Storage of the ML-DSA Private Key
+
+   In general, many protocols have defined exactly the way in which a private key is to be represented when stored. This
+   has required all parties involved to implement the same mechanism in which to represent the private key if they
+   desire to have a compliant implementation. This has almost never been the case for SSH, which has allowed different
+   implementations to represent the private key in any way which made sense to the application. This has also almost
+   never been a problem, as the chosen representation of the private key was nearly always interoperable with different
+   implementations allowing users to "port" their `implementation style 1` keys to `implementation style 2` or vice
+   versa.
+
+   Depending on the way in which an ML-DSA key is represented between implementations could possibly prevent the
+   conversion of one format to another. As such, this document does not limit the mechanism in which an implementation
+   chooses to represent the private key, but does make a suggestion for interoperability reasons.
+
+   As discussed in section 3.6.3 of [FIPS204], The ML-DSA seed value (denoted in the document as ξ) can be stored rather
+   than the full expanded private/public key. This decision is one that offers a trade off of storage space vs
+   computation. If one were to store the private key, the amount of storage space required ranges from 2560 bytes - 4896
+   bytes (depending of course on the parameter set chosen). Although by today's general computation standards, these
+   storage requirements are very minimal (an average picture for example is 10KB - 10MB), for space constrained devices
+   (i.e. smart cards), this can severely limit the number of ML-DSA keys that can be stored on such a device.
+   Representing the private/public keypair with the seed however limits the storage requirements to just 32 bytes --
+   around the size of an ECDSA key on the P-256 curve. The computational tradeoff here is of course that if you want to
+   produce a signature from an ML-DSA private key, you first have to re-expand the private key from the seed value to
+   the full-expanded private key before producing the signature, every time (or minimally cache the expanded private key
+   in primary memory for the length of time intended to produce signatures, which again for constrained devices, is
+   limited). This computation is not much of a slow down from loading in the private key from secondary storage, but it
+   is still extra computation that has to be done, every time.
+
+   As such, an ML-DSA private key SHOULD be represented as the seed value (ξ) as denoted in [FIPS204] for the purposes of
+   interoperability between all devices and implementations. An ML-DSA private key MAY be represented as the full key,
+   and if desired MAY be represented by a concatenation between the seed value and the expanded private key so that
+   implementations can take advantage of interoperability and conversion, but also take advantage of not re-expanding
+   the key each time, with the disadvantage being of course that the storage requirements for the keys as listed in the
+   last paragraph are increased by 32 bytes.
+
+   Please note that PKCS#8 encoding of the ML-DSA private key is not finalized (as of the writing of this document), but
+   there is a document currently in draft [I-D.ietf-lamps-pq-composite-sigs] as well as [RFC9881], which have suggested
+   and used the ML-DSA seed value in the PKCS8 format. If implementations wish to utilize PKCS8 for their implementation
+   and serialization / deserialization of the private key, it is likely that storage in seed format will be a
+   requirement.
 
 # Acknowledgments
 {:numbered="false"}
