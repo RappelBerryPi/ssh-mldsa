@@ -30,9 +30,6 @@ author:
   - fullname: "Ryan Appel"
     organization: Bank of America
     email: "ryan.appel@bofa.com"
-  - fullname: "Ryan Appel"
-    organization: Bank of America
-    email: "ryan.appel@bofa.com"
 
 normative:
 
@@ -50,16 +47,12 @@ informative:
   RFC4253:
   RFC4255:
   RFC9881:
-  RFC9881:
   IANA-SSH:
     target: https://www.iana.org/assignments/ssh-parameters
     title: Secure Shell (SSH) Protocol Parameters
   IANA-SSHFP:
     target: https://www.iana.org/assignments/dns-sshfp-rr-parameters)
     title: DNS SSHFP Resource Record Parameters
-  I-D.ietf-lamps-pq-composite-sigs:
-     target: https://datatracker.ietf.org/doc/draft-ietf-lamps-pq-composite-sigs/19/
-     title: Composite Module-Lattice-Based Digital Signature Algorithm (ML-DSA) for use in X.509 Public Key Infrastructure
   I-D.ietf-lamps-pq-composite-sigs:
      target: https://datatracker.ietf.org/doc/draft-ietf-lamps-pq-composite-sigs/19/
      title: Composite Module-Lattice-Based Digital Signature Algorithm (ML-DSA) for use in X.509 Public Key Infrastructure
