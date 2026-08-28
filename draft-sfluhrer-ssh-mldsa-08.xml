@@ -188,21 +188,15 @@ Here, 'key' is the 2592-octet public key encoded as is described in <xref target
     </section>
     <section anchor="private-key-format">
       <name>Private Key Format</name>
-<t>
-It is not required that the implementation be able to import or export private keys, but if it does, it MUST use the below format
-</t>
-<ul>
-<li>
-			<dl newline="false" spacing="compact" indent="6">
-				<dt>string</dt><dd>key_type_name</dd>
-				<dt>string</dt><dd>mldsa_public_key</dd>
-				<dt>byte[32]</dt><dd>private_seed</dd>
- 			</dl>
-</li>
-</ul>
-			<t>
-Where "key_type_name" is either "ssh_mldsa44", "ssh_mldsa65" or "ssh_mldsa87", mldsa_public_key is the 1312, 1952 or 2592 octet public key, and 'private_seed' is the 32-octet seed as used as the input to <xref target="FIPS204"/> Algorithm 6.
-			</t>
+      <t> It is not required that the implementation be able to import or export private keys, but if it does, it SHOULD
+      use good judgement on the methods in which keys can be imported and exported. </t>
+      <t> Implementers and Users of these implementations should be aware that <xref target="FIPS204"/> allows for the
+      private key to be stored in either "seed" form or "expanded" form. While it is feasible for an implementation to
+      expand the seed form of the private key to the expanded form, it is impossible to reverse this expansion. If one
+      implementation only uses and stores the expanded form of the ML-DSA private key, exporting a key from that implementation to
+      a different implementation that only supports seed format is impossible.</t>
+      <t> Although Private key format is out of scope of this document, if an implementation stores a key in expanded
+      form, it SHOULD also store the seed format of the same private key as to not prohibit interoperability. </t>
     </section>
     <section anchor="signature-algorithm">
       <name>Signature Algorithm</name>
